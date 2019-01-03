@@ -2,7 +2,7 @@
 This repository contains a clean-up code for noisy K-FAC ("Noisy Natural Gradient as Variational Inference") and noisy EK-FAC ("Eigenvalue Corrected Noisy Natural Gradient").
  
 Papers: 
-- [Noisy Natural Gradient as Variational Inference](https://arxiv.org/pdf/1712.02390.pdf)
+- [Noisy Natural Gradient as Variational Inference](http://proceedings.mlr.press/v80/zhang18l/zhang18l.pdf)
 - [Eigenvalue Corrected Noisy Natural Gradient](https://arxiv.org/pdf/1811.12565.pdf)
 
 ## Usage
