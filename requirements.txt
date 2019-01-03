@@ -1,0 +1,10 @@
+# General Utilities
+tqdm
+Bunch
+six
+
+# Core Engine
+tensorflow
+numpy
+torch
+torchvision
