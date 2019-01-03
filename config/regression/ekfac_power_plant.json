@@ -1,7 +1,7 @@
 {
   "mode": "regression",
-  "exp_name": "ekfac_kin8nm",
-  "dataset": "kin8nm",
+  "exp_name": "ekfac_power_plant",
+  "dataset": "power_plant",
   "data_path": "regression/data",
   "optimizer": "ekfac",
   "fisher_approx": "eigen",

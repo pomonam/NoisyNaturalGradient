@@ -22,7 +22,6 @@
   "kfac_init_after_basis": true,
   "amor_eigen": true,
   "Teigen": 5,
-  "kl_clip": 1e-3,
   "kl": 1,
   "eta": 1,
   "train_particles": 10,
