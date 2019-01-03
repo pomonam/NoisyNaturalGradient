@@ -6,7 +6,7 @@ Papers:
 - [Eigenvalue Corrected Noisy Natural Gradient](https://arxiv.org/pdf/1811.12565.pdf)
 
 ## Usage
-The repository is separated in two parts: regression and classification. The choice of hyper-parameters is described in the paper.
+The repository is composed of two parts: regression and classification. The choice of hyper-parameters is described in the paper.
 
 #### Noisy K-FAC
 - Classification
