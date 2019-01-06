@@ -73,3 +73,4 @@ tensorboard --logdir=experiments/cifar10/ekfac_vgg16_aug/summary
 ## Contributors
 - [Juhan Bae](https://github.com/pomonam)
 - [Guodong Zhang](https://github.com/gd-zhang)
+- [Shengyang Sun](https://github.com/ssydasheng)
