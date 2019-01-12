@@ -18,10 +18,13 @@ def vgg(inputs, controller, is_training, add_batch_norm, layer_collection, parti
         for l in range(layers):
             in_channel = inputs.shape.as_list()[-1]
             container, idx = controller.register_conv_layer(3, in_channel, out_channel)
-            sampled_weight = controller.get_weight(idx)
+            cur_block = layer_collection.register_conv2d(controller.get_params(idx), (1, 1, 1, 1), "SAME")
+            sampled_weight = controller.get_weight(idx, cur_block)
             pre, act = conv2d(inputs, sampled_weight, (3, 3, in_channel, out_channel),
                               add_batch_norm, is_training, particles, padding="SAME")
-            layer_collection.register_conv2d(controller.get_params(idx), (1, 1, 1, 1), "SAME", inputs, pre)
+            cur_block.register_additional_minibatch(inputs, pre)
+            # layer_collection.register_conv2d(controller.get_params(idx), (1, 1, 1, 1), "SAME", inputs, pre)
+
             inputs = act
             l2_loss += 0.5 * tf.reduce_sum(sampled_weight ** 2)
         outputs = tf.layers.max_pooling2d(inputs, 2, 2, "SAME")
@@ -44,10 +47,11 @@ def vgg(inputs, controller, is_training, add_batch_norm, layer_collection, parti
 
     flat = tf.reshape(layer5, shape=[-1, int(np.prod(layer5.shape[1:]))])
     container, idx = controller.register_fc_layer(256, 10)
-    weights = container.sample_weight(particles)
+    cur_block = layer_collection.register_fully_connected(container.params())
+    weights = container.sample_weight(particles, cur_block)
     l2_loss += 0.5 * tf.reduce_sum(weights ** 2)
     logits, _ = dense(flat, weights, add_batch_norm, is_training, particles)
-    layer_collection.register_fully_connected(container.params(), flat, logits)
+    cur_block.register_additional_minibatch(flat, logits)
     layer_collection.register_categorical_predictive_distribution(logits, name="logits")
 
     return logits, l2_loss

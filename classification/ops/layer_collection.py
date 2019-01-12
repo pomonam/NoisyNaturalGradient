@@ -156,8 +156,8 @@ class LayerCollection(object):
 
     def register_fully_connected(self,
                                  params,
-                                 inputs,
-                                 outputs,
+                                 inputs=None,
+                                 outputs=None,
                                  approx=None,
                                  reuse=VARIABLE_SCOPE):
         if approx is None:
@@ -170,14 +170,16 @@ class LayerCollection(object):
         has_bias = isinstance(params, (tuple, list))
 
         block = self.register_block(params, block_type(self, has_bias), reuse=reuse)
-        block.register_additional_minibatch(inputs, outputs)
+        if inputs is None or outputs is None:
+            block.register_additional_minibatch(inputs, outputs)
+        return block
 
     def register_conv2d(self,
                         params,
                         strides,
                         padding,
-                        inputs,
-                        outputs,
+                        inputs=None,
+                        outputs=None,
                         approx=None,
                         reuse=VARIABLE_SCOPE):
         if approx is None:
@@ -189,7 +191,9 @@ class LayerCollection(object):
         block_type = _CONV2D_APPROX_TO_BLOCK_TYPES[approx]
         block = self.register_block(
             params, block_type(self, params, strides, padding), reuse=reuse)
-        block.register_additional_minibatch(inputs, outputs)
+        if inputs is None or outputs is None:
+            block.register_additional_minibatch(inputs, outputs)
+        return block
 
     def register_categorical_predictive_distribution(self,
                                                      logits,

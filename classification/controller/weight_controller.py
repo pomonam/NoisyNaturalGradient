@@ -74,14 +74,14 @@ class WeightController(object):
         self._num_layers += 1
         return container, cur_idx
 
-    def get_weight(self, layer_idx):
+    def get_weight(self, layer_idx, fisher_block):
         """ Return the current weight of the layer with the given layer_idx.
         :param layer_idx: int
         :return: 2D Tensor with size 'batch_size x feature_size'
         """
         if layer_idx >= len(self._controller):
             raise IndexError("Cannot find the specified layer_idx, {}.".format(str(layer_idx)))
-        return self._controller[layer_idx].sample_weight(self._particles)
+        return self._controller[layer_idx].sample_weight(self._particles, fisher_block)
 
     def get_params(self, layer_idx):
         """ Return the params for each layer.

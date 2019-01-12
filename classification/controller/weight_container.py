@@ -175,17 +175,17 @@ class EMVGWeightContainer(WeightContainer):
         """ Initialize Eigenvalue Corrected Matrix Variate Gaussian (EMVG) Weight Container. """
         super(EMVGWeightContainer, self).__init__(data_size, shape, layer_idx, coeff, eta)
 
-        self._u = tf.get_variable("u_weight_{}".format(str(self._idx)),
-                                  initializer=1e-3 * tf.eye(self._in_channels),
-                                  trainable=False)
-        self._v = tf.get_variable("v_weight_{}".format(str(self._idx)),
-                                  initializer=1e-3 * tf.eye(self._out_channels),
-                                  trainable=False)
-        self._s = tf.get_variable("s_weight_{}".format(str(self._idx)),
-                                  initializer=1e-5 * tf.ones([self._in_channels, self._out_channels]),
-                                  trainable=False)
+        # self._u = tf.get_variable("u_weight_{}".format(str(self._idx)),
+        #                           initializer=1e-3 * tf.eye(self._in_channels),
+        #                           trainable=False)
+        # self._v = tf.get_variable("v_weight_{}".format(str(self._idx)),
+        #                           initializer=1e-3 * tf.eye(self._out_channels),
+        #                           trainable=False)
+        # self._s = tf.get_variable("s_weight_{}".format(str(self._idx)),
+        #                           initializer=1e-5 * tf.ones([self._in_channels, self._out_channels]),
+        #                           trainable=False)
 
-    def sample_weight(self, particles):
+    def sample_weight(self, particles, fisher_block):
         """ Sample weight from the variational posterior.
         In the paper, W ~ MN(M, (lambda / num_data) * inv(A^gamma_in), inv(S^gamma_in))
         :return: 2D Tensor with size 'batch_size x feature_size'
@@ -194,9 +194,9 @@ class EMVGWeightContainer(WeightContainer):
         homo_weight = self._combine_weight_bias()
         multi_weight = tf.tile(tf.expand_dims(homo_weight, 0), [particles, 1, 1])
         noise = tf.random_normal(shape=tf.shape(multi_weight))
-        u_c = tf.tile(tf.expand_dims(self._u, 0), [particles, 1, 1])
-        v_c = tf.tile(tf.expand_dims(self._v, 0), [particles, 1, 1])
-        s_c = tf.tile(tf.expand_dims(self._s, 0), [particles, 1, 1])
+        u_c = tf.tile(tf.expand_dims(fisher_block._scale_factor._input_factor_eigen_basis, 0), [particles, 1, 1])
+        v_c = tf.tile(tf.expand_dims(fisher_block._scale_factor._output_factor_eigen_basis, 0), [particles, 1, 1])
+        s_c = tf.tile(tf.expand_dims(fisher_block._scale_factor, 0), [particles, 1, 1])
 
         reshaped_out = tf.multiply(noise, s_c)
         return multi_weight + tf.matmul(u_c, tf.matmul(reshaped_out, v_c, transpose_b=True))
@@ -207,8 +207,8 @@ class EMVGWeightContainer(WeightContainer):
         """
         left_eigen_basis = fisher_block._scale_factor._input_factor_eigen_basis
         right_eigen_basis = fisher_block._scale_factor._output_factor_eigen_basis
-        weight_update_ops = [self._u.assign(left_eigen_basis),
-                             self._v.assign(right_eigen_basis)]
+        weight_update_ops = [fisher_block._scale_factor._input_factor_eigen_basis.assign(left_eigen_basis),
+                             fisher_block._scale_factor._output_factor_eigen_basis.assign(right_eigen_basis)]
 
         return tf.group(*weight_update_ops)
 
@@ -221,5 +221,5 @@ class EMVGWeightContainer(WeightContainer):
         # Add by intrinsic damping term.
         damped_scale_cov = scale_cov + tf.divide(self._coeff, self._eta)
         damped_inverse_scale_cov = self._coeff / damped_scale_cov
-        scale_update_op = [self._s.assign(tf.sqrt(damped_inverse_scale_cov))]
+        scale_update_op = [fisher_block._scale_factor.assign(tf.sqrt(damped_inverse_scale_cov))]
         return tf.group(*scale_update_op)
