@@ -54,7 +54,7 @@ class NGOptimizer(gradient_descent.GradientDescentOptimizer):
         self._norm_constraint = norm_constraint
 
         opt_type = str(opt_type).lower()
-        legal_opt_type = ["kfac", "ekfac"]
+        legal_opt_type = ["kfac", "ekfac", "diag"]
 
         if opt_type not in legal_opt_type:
             raise ValueError("Unsupported optimization type {}. Must be one of {}."
@@ -89,6 +89,18 @@ class NGOptimizer(gradient_descent.GradientDescentOptimizer):
                     cov_devices=cov_devices,
                     inv_devices=inv_devices,
                     distribution="mvg")
+            elif self._opt_type == "diag":
+                self._fisher_est = est.FisherEstimator(
+                    variables,
+                    cov_ema_decay,
+                    scale_ema_decay,
+                    damping,
+                    layer_collection,
+                    estimation_mode=estimation_mode,
+                    colocate_gradients_with_ops=colocate_gradients_with_ops,
+                    cov_devices=cov_devices,
+                    inv_devices=inv_devices,
+                    distribution="diag")
             else:
                 raise NotImplementedError()
 

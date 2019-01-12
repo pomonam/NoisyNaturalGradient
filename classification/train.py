@@ -46,6 +46,9 @@ class Trainer(BaseTrain):
                     self.model.cov_update_op is not None:
                 self.sess.run([self.model.cov_update_op], feed_dict=feed_dict)
 
+                if self.config.optimizer == "diag":
+                    self.sess.run([self.model.var_update_op], feed_dict=feed_dict)
+
             if cur_iter % self.config.get('TInv', 200) == 0 and \
                     self.model.inv_update_op is not None:
                 self.sess.run([self.model.inv_update_op, self.model.var_update_op], feed_dict=feed_dict)

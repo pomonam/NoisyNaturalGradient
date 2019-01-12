@@ -26,6 +26,9 @@ class Model(BaseModel):
         elif config.optimizer == "kfac":
             print("[!] Optimizer: KFAC")
             self.layer_collection = lc.LayerCollection(mode="kfac")
+        elif config.optimizer == "diag":
+            print("[!] Optimizer: Diagonal Fisher")
+            self.layer_collection = lc.LayerCollection(mode="diag")
         else:
             print("[!] Optimizer: {}".format(config.optimizer))
             self.layer_collection = None
@@ -152,6 +155,25 @@ class Model(BaseModel):
 
             with tf.control_dependencies([self.inv_update_op]):
                 self.var_update_op = self.sampler.update_weights(self.layer_collection.get_blocks())
+
+        if self.config.optimizer == "diag":
+            self.optim = NGOptimizer(var_list=self.trainable_variables,
+                                     learning_rate=tf.train.exponential_decay(self.config.learning_rate,
+                                                                              self.global_step_tensor,
+                                                                              self.config.decay_every_itr, 0.1,
+                                                                              staircase=True),
+                                     cov_ema_decay=self.config.cov_ema_decay,
+                                     damping=self.config.damping,
+                                     layer_collection=self.layer_collection,
+                                     norm_constraint=self.config.kl_clip,
+                                     momentum=self.config.momentum,
+                                     opt_type=self.config.optimizer)
+            self.cov_update_op = self.optim.cov_update_op
+            self.eigen_basis_update_op = None
+            self.scale_update_op = None
+            self.inv_update_op = None
+
+            self.var_update_op = self.sampler.update_weights(self.layer_collection.get_blocks())
 
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         with tf.control_dependencies(update_ops):
