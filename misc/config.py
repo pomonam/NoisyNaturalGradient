@@ -8,6 +8,13 @@ import json
 import os
 
 
+class Bunch3(Bunch):
+    def __repr__(self):
+        keys = self.keys()
+        args = ', '.join(['%s=%r' % (key, self[key]) for key in keys])
+        return '%s(%s)' % (self.__class__.__name__, args)
+
+
 def get_config_from_json(json_file):
     """ Get the config from a json file.
     :param json_file: String
@@ -17,9 +24,7 @@ def get_config_from_json(json_file):
     with open(json_file, 'r') as config_file:
         config_dict = json.load(config_file)
 
-    # convert the dictionary to a namespace using bunch lib
-    # may cause error in Python 3 >.
-    config = Bunch(config_dict)
+    config = Bunch3(config_dict)
 
     return config, config_dict
 
