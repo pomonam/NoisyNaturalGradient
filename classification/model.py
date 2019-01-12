@@ -157,6 +157,7 @@ class Model(BaseModel):
                 self.var_update_op = self.sampler.update_weights(self.layer_collection.get_blocks())
 
         if self.config.optimizer == "diag":
+            # need hyper-parameter tuning
             self.optim = NGOptimizer(var_list=self.trainable_variables,
                                      learning_rate=tf.train.exponential_decay(self.config.learning_rate,
                                                                               self.global_step_tensor,
